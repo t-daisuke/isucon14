@@ -64,9 +64,14 @@ func setup() http.Handler {
 		panic(err)
 	}
 	db = _db
+	db.SetMaxOpenConns(50)
+	db.SetMaxIdleConns(50)
 
 	mux := chi.NewRouter()
-	mux.Use(middleware.Logger)
+	// リクエストごとのログは重いので、必要なときだけ ISUCON_ACCESS_LOG=1 で有効にする
+	if os.Getenv("ISUCON_ACCESS_LOG") != "" {
+		mux.Use(middleware.Logger)
+	}
 	mux.Use(middleware.Recoverer)
 	mux.HandleFunc("POST /api/initialize", postInitialize)
 
@@ -172,7 +177,7 @@ func writeError(w http.ResponseWriter, statusCode int, err error) {
 	}
 	w.Write(buf)
 
-	slog.Error("error response wrote", err)
+	slog.Error("error response wrote", "error", err)
 }
 
 func secureRandomStr(b int) string {
