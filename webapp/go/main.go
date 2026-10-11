@@ -58,6 +58,8 @@ func setup() http.Handler {
 	dbConfig.Net = "tcp"
 	dbConfig.DBName = dbname
 	dbConfig.ParseTime = true
+	// クエリごとのサーバー側 prepare を省く (往復削減)
+	dbConfig.InterpolateParams = true
 
 	_db, err := sqlx.Connect("mysql", dbConfig.FormatDSN())
 	if err != nil {
@@ -84,7 +86,8 @@ func setup() http.Handler {
 		authedMux.HandleFunc("GET /api/app/rides", appGetRides)
 		authedMux.HandleFunc("POST /api/app/rides", appPostRides)
 		authedMux.HandleFunc("POST /api/app/rides/estimated-fare", appPostRidesEstimatedFare)
-		authedMux.HandleFunc("POST /api/app/rides/{ride_id}/evaluation", appPostRideEvaluatation)
+		// 評価は決済を伴うので、切断されても決済と確定を最後まで完了させる
+		mux.With(detachCancelMiddleware, appAuthMiddleware).HandleFunc("POST /api/app/rides/{ride_id}/evaluation", appPostRideEvaluatation)
 		authedMux.HandleFunc("GET /api/app/notification", appGetNotification)
 		authedMux.HandleFunc("GET /api/app/nearby-chairs", appGetNearbyChairs)
 	}
@@ -100,9 +103,10 @@ func setup() http.Handler {
 
 	// chair handlers
 	{
-		mux.HandleFunc("POST /api/chair/chairs", chairPostChairs)
+		chairMux := mux.With(detachCancelMiddleware)
+		chairMux.HandleFunc("POST /api/chair/chairs", chairPostChairs)
 
-		authedMux := mux.With(chairAuthMiddleware)
+		authedMux := chairMux.With(chairAuthMiddleware)
 		authedMux.HandleFunc("POST /api/chair/activity", chairPostActivity)
 		authedMux.HandleFunc("POST /api/chair/coordinate", chairPostCoordinate)
 		authedMux.HandleFunc("GET /api/chair/notification", chairGetNotification)

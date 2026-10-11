@@ -56,6 +56,13 @@ func ownerAuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// 椅子 API は切断されても処理を最後まで走らせる (切断由来の context canceled で 500 にしない)
+func detachCancelMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		next.ServeHTTP(w, r.WithContext(context.WithoutCancel(r.Context())))
+	})
+}
+
 func chairAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
