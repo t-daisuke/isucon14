@@ -7,12 +7,7 @@ package main
 const freeChairsWithLatestLocationSQL = `
 SELECT c.id, c.name, c.model, l.latitude, l.longitude
 FROM chairs c
-JOIN (
-  SELECT chair_id, MAX(created_at) AS created_at
-  FROM chair_locations
-  GROUP BY chair_id
-) m ON m.chair_id = c.id
-JOIN chair_locations l ON l.chair_id = m.chair_id AND l.created_at = m.created_at
+JOIN chair_latest_locations l ON l.chair_id = c.id
 WHERE c.is_active = TRUE
   AND c.id NOT IN (
     SELECT r.chair_id

@@ -153,3 +153,14 @@ CREATE TABLE coupons
   INDEX idx_coupons_used_by (used_by)
 )
   COMMENT 'クーポンテーブル';
+
+DROP TABLE IF EXISTS chair_latest_locations;
+CREATE TABLE chair_latest_locations
+(
+  chair_id   VARCHAR(26) NOT NULL COMMENT '椅子ID',
+  latitude   INTEGER     NOT NULL COMMENT '経度',
+  longitude  INTEGER     NOT NULL COMMENT '緯度',
+  created_at DATETIME(6) NOT NULL COMMENT '位置情報の登録日時',
+  PRIMARY KEY (chair_id)
+)
+  COMMENT = '椅子の最新位置テーブル(位置情報の登録ごとに更新)';

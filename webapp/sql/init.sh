@@ -42,3 +42,10 @@ mysql -u"$ISUCON_DB_USER" \
 		--host "$ISUCON_DB_HOST" \
 		--port "$ISUCON_DB_PORT" \
 		"$ISUCON_DB_NAME" < 4-backfill-chair-distance.sql
+
+# 初期データの位置情報から椅子の最新位置を埋める
+mysql -u"$ISUCON_DB_USER" \
+		-p"$ISUCON_DB_PASSWORD" \
+		--host "$ISUCON_DB_HOST" \
+		--port "$ISUCON_DB_PORT" \
+		"$ISUCON_DB_NAME" < 5-backfill-chair-latest.sql
