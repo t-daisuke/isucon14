@@ -66,8 +66,8 @@ func setup() http.Handler {
 		panic(err)
 	}
 	db = _db
-	db.SetMaxOpenConns(50)
-	db.SetMaxIdleConns(50)
+	db.SetMaxOpenConns(300)
+	db.SetMaxIdleConns(300)
 
 	mux := chi.NewRouter()
 	// リクエストごとのログは重いので、必要なときだけ ISUCON_ACCESS_LOG=1 で有効にする
